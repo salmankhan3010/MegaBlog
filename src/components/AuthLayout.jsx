@@ -6,10 +6,10 @@ import { useSelector } from "react-redux";
 export default function Protected({ children, authentication = true }) {
   const navigate = useNavigate();
   const [loader, setLoader] = useState(true);
-  const authStatus = useSelector((state) => state.auth.authStatus);
+  const authStatus = useSelector((state) => state.auth.status);
   useEffect(() => {
     if (authentication && authStatus !== authentication) {
-      navigate("/");
+      navigate("/login");
     } else if (!authentication && authStatus !== authentication) {
       navigate("/");
     }

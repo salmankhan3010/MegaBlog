@@ -1,27 +1,27 @@
-import React from "react";
-import { useCallback } from "react";
+import React, { useCallback } from "react";
 import { useForm } from "react-hook-form";
-import { Button, Input, Select, RTE } from "../index";
-import appwriteService from "../../appwrite/DBconfig";
-import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import appwriteService from "../../appwrite/DBconfig";
+import { Button, Input, RTE, Select } from "../index";
 
 function PostForm(post) {
   const { register, handleSubmit, watch, setValue, control, getValues } =
     useForm({
       defaultValues: {
         title: post?.title || "",
-        slug: post?.slug || "",
+        slug: post?.$id || "",
         content: post?.content || "",
         status: post?.status || "active",
       },
     });
   const navigate = useNavigate();
-  const userData = useSelector((state) => state.user.userData);
+  const userData = useSelector((state) => state.user?.userData);
+
   const submit = async (data) => {
     if (post) {
       const file = data.image[0]
-        ? appwriteService.uploadFile(data.image[0])
+        ? await appwriteService.uploadFile(data.image[0])
         : null;
       if (file) {
         appwriteService.deleteFile(post.featuredImage);
@@ -30,12 +30,14 @@ function PostForm(post) {
         ...data,
         featuredImage: file ? file.$id : undefined,
       });
+
       if (dbPost) {
         navigate(`/post/${dbPost.$id}`);
       }
     } else {
       const file = await appwriteService.uploadFile(data.image[0]);
       if (file) {
+        console.log(fileId);
         const fileId = file.$id;
         date.featuredImage = fileId;
         const dbPost = await appwriteService.createPost({
@@ -48,6 +50,7 @@ function PostForm(post) {
       }
     }
   };
+
   const slugTransform = useCallback((value) => {
     if (value && typeof value === "string")
       return value
@@ -58,6 +61,7 @@ function PostForm(post) {
 
     return "";
   }, []);
+
   React.useEffect(() => {
     const subscription = watch((value, { name }) => {
       if (name === "title") {
